@@ -33,19 +33,16 @@
       justify-content: center;
     }
 
-    /* SLOT FIX (NO CLIPPING) */
     .slot {
       width: 110px;
       height: 145px;
       background: #1e293b;
       border: 2px solid #334155;
       border-radius: 12px;
-
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-
       font-size: 12px;
       padding: 6px;
       overflow: hidden;
@@ -57,7 +54,6 @@
       border-radius: 8px;
     }
 
-    /* ICON ROW FIX */
     .icon-row {
       display: flex;
       justify-content: center;
@@ -65,9 +61,10 @@
       margin-top: 5px;
     }
 
+    /* ✅ BIGGER ICONS FIX */
     .icon-row img {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       object-fit: contain;
     }
 
@@ -88,7 +85,6 @@
       cursor: pointer;
     }
 
-    /* POPUP */
     .popup {
       display: none;
       position: fixed;
@@ -243,10 +239,26 @@ const dragons = [
   { name:"Impiavolo", value:"800K", type:"world", img:"https://static.wikia.nocookie.net/dragon-adventures/images/3/39/Impiavolo_Icon.png" }
 ];
 
+/* ✅ FIXED: now includes EVENT type */
 const bonuses = {
-  mutation: { world:250000, season:500000, guild:500000 },
-  legColor: { world:500000, season:1000000, guild:500000 },
-  legEye: { world:500000, season:1000000, guild:1000000 }
+  mutation: {
+    world: 250000,
+    season: 500000,
+    guild: 500000,
+    event: 250000
+  },
+  legColor: {
+    world: 500000,
+    season: 1000000,
+    guild: 500000,
+    event: 500000
+  },
+  legEye: {
+    world: 500000,
+    season: 1000000,
+    guild: 1000000,
+    event: 1000000
+  }
 };
 
 let you=[], them=[], activeSide=null, pendingDragon=null;
@@ -307,15 +319,15 @@ function draw(id,list,side){
 
 function openPopup(side){
   activeSide=side;
-  document.getElementById("popup").style.display="block";
-  document.getElementById("overlay").style.display="block";
+  popup.style.display="block";
+  overlay.style.display="block";
   renderDragonList(dragons);
 }
 
 function closePopup(){
-  document.getElementById("popup").style.display="none";
-  document.getElementById("overlay").style.display="none";
-  document.getElementById("optionsPopup").style.display="none";
+  popup.style.display="none";
+  overlay.style.display="none";
+  optionsPopup.style.display="none";
 }
 
 function renderDragonList(list){
@@ -332,13 +344,13 @@ function renderDragonList(list){
 }
 
 function filterDragons(){
-  let val=document.getElementById("searchBox").value.toLowerCase();
+  let val=searchBox.value.toLowerCase();
   renderDragonList(dragons.filter(d=>d.name.toLowerCase().includes(val)));
 }
 
 function addDragon(d){
   pendingDragon=d;
-  document.getElementById("optionsPopup").style.display="block";
+  optionsPopup.style.display="block";
 }
 
 function confirmAdd(){
@@ -357,7 +369,7 @@ function confirmAdd(){
 }
 
 function remove(side,i){
-  side===1 ? you.splice(i,1) : them.splice(i,1);
+  side===1?you.splice(i,1):them.splice(i,1);
   update();
 }
 
@@ -370,15 +382,12 @@ function update(){
   let diff=t-y;
   let p=diff/Math.max(y,t||1);
 
-  let bar=document.getElementById("wfl");
-  let w=50+p*50;
-  w=Math.max(0,Math.min(100,w));
+  let bar=wfl;
+  let width=50+p*50;
+  width=Math.max(0,Math.min(100,width));
 
-  bar.style.width=w+"%";
-  bar.style.background=
-    p>0.1?"#22c55e":
-    p<-0.1?"#ef4444":
-    "#facc15";
+  bar.style.width=width+"%";
+  bar.style.background=p>0.1?"#22c55e":p<-0.1?"#ef4444":"#facc15";
 
   let a=Math.abs(p);
   let label=a<0.1?"FAIR TRADE":
@@ -386,10 +395,9 @@ function update(){
             p>0.1?"SMALL WIN":
             p<-0.3?"BIG LOSS":"SMALL LOSS";
 
-  document.getElementById("wflText").innerText=label;
+  wflText.innerText=label;
 
-  document.getElementById("result").innerText=
-    `You: ${y.toLocaleString()} | Them: ${t.toLocaleString()}`;
+  result.innerText=`You: ${y.toLocaleString()} | Them: ${t.toLocaleString()}`;
 }
 
 render();
