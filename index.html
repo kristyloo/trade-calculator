@@ -93,6 +93,10 @@
 
 <div id="result"></div>
 
+<div style="width:80%; height:20px; background:#334155; margin:20px auto; border-radius:10px;">
+  <div id="wflBar" style="height:100%; width:50%; background:#22c55e; border-radius:10px;"></div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -103,22 +107,18 @@ document.addEventListener("DOMContentLoaded", function () {
     { name: "Venid", value: "2K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" }
   ];
 
-  // 🔥 NOW ARRAYS (MULTIPLE PICKS)
+  // 9-slot trade system
   let p1 = [];
   let p2 = [];
 
+  const MAX_SLOTS = 9;
+
   function parseValue(input) {
     if (!input) return 0;
-
     input = input.toString().toUpperCase().trim();
 
-    if (input.endsWith("M")) {
-      return parseFloat(input) * 1_000_000;
-    }
-
-    if (input.endsWith("K")) {
-      return parseFloat(input) * 1_000;
-    }
+    if (input.endsWith("M")) return parseFloat(input) * 1_000_000;
+    if (input.endsWith("K")) return parseFloat(input) * 1_000;
 
     return parseFloat(input) || 0;
   }
@@ -136,74 +136,129 @@ document.addEventListener("DOMContentLoaded", function () {
       .filter(d => d.name.toLowerCase().includes(search))
       .forEach(d => {
 
+        // YOU SIDE
         const card1 = document.createElement("div");
         card1.className = "dragon";
-        card1.innerHTML = `<img src="${d.img}"><p>${d.name}</p>`;
-        card1.onclick = () => toggleSelect(1, d, card1);
+        card1.innerHTML = `
+          <img src="${d.img}">
+          <p>${d.name}</p>
+          <button>➕</button>
+        `;
+        card1.querySelector("button").onclick = () => addDragon(1, d);
 
+        // THEM SIDE
         const card2 = document.createElement("div");
         card2.className = "dragon";
-        card2.innerHTML = `<img src="${d.img}"><p>${d.name}</p>`;
-        card2.onclick = () => toggleSelect(2, d, card2);
+        card2.innerHTML = `
+          <img src="${d.img}">
+          <p>${d.name}</p>
+          <button>➕</button>
+        `;
+        card2.querySelector("button").onclick = () => addDragon(2, d);
 
         youBox.appendChild(card1);
         themBox.appendChild(card2);
       });
   }
 
-  // 🔥 TOGGLE (MULTI SELECT)
-  function toggleSelect(player, dragon, element) {
+  function addDragon(player, dragon) {
 
     let list = player === 1 ? p1 : p2;
 
-    const index = list.indexOf(dragon.value);
-
-    if (index === -1) {
-      list.push(dragon.value);
-      element.classList.add("selected");
-    } else {
-      list.splice(index, 1);
-      element.classList.remove("selected");
+    if (list.length >= MAX_SLOTS) {
+      alert("Max 9 slots reached!");
+      return;
     }
+
+    list.push(dragon.value);
 
     if (player === 1) p1 = list;
     else p2 = list;
+
+    updateTradeUI();
   }
 
-  // 🔥 FIXED WFL LOGIC
-  function checkTrade() {
+  function removeDragon(player, index) {
 
-    if (p1.length === 0 || p2.length === 0) {
-      document.getElementById("result").innerText = "Pick dragons first!";
-      return;
-    }
+    let list = player === 1 ? p1 : p2;
+
+    list.splice(index, 1);
+
+    if (player === 1) p1 = list;
+    else p2 = list;
+
+    updateTradeUI();
+  }
+
+  function updateTradeUI() {
+    renderSlots();
+    checkTrade();
+  }
+
+  function renderSlots() {
+
+    const youBox = document.getElementById("youBox");
+    const themBox = document.getElementById("themBox");
+
+    youBox.innerHTML = "";
+    themBox.innerHTML = "";
+
+    renderSide(p1, 1, youBox);
+    renderSide(p2, 2, themBox);
+  }
+
+  function renderSide(list, player, container) {
+
+    list.forEach((val, i) => {
+
+      const div = document.createElement("div");
+      div.className = "dragon selected";
+      div.innerHTML = `
+        <p>${val}</p>
+        <button>➖</button>
+      `;
+
+      div.querySelector("button").onclick = () => removeDragon(player, i);
+
+      container.appendChild(div);
+    });
+  }
+
+  function checkTrade() {
 
     let p1Total = p1.reduce((sum, v) => sum + parseValue(v), 0);
     let p2Total = p2.reduce((sum, v) => sum + parseValue(v), 0);
 
-    let diff = p2Total - p1Total; // 🔥 FIXED DIRECTION
+    let diff = p2Total - p1Total;
     let percent = diff / Math.max(p1Total, p2Total);
 
-    let result = "";
+    let text = "";
 
-    if (Math.abs(percent) < 0.1) {
-      result = "FAIR TRADE";
-    } 
-    else if (percent > 0) {
-      result = percent > 0.5 ? "HUGE WIN FOR YOU" : "WIN FOR YOU";
-    } 
-    else {
-      result = percent < -0.5 ? "HUGE LOSS FOR YOU" : "LOSS FOR YOU";
-    }
+    if (Math.abs(percent) < 0.1) text = "FAIR TRADE";
+    else if (percent > 0) text = percent > 0.5 ? "HUGE WIN FOR YOU" : "WIN FOR YOU";
+    else text = percent < -0.5 ? "HUGE LOSS FOR YOU" : "LOSS FOR YOU";
 
     document.getElementById("result").innerText =
-      `You: ${p1Total.toLocaleString()} | Them: ${p2Total.toLocaleString()} → ${result}`;
+      `You: ${p1Total.toLocaleString()} | Them: ${p2Total.toLocaleString()} → ${text}`;
+
+    updateBar(p1Total, p2Total);
+  }
+
+  // WFL BAR
+  function updateBar(p1Total, p2Total) {
+
+    let bar = document.getElementById("wflBar");
+
+    let total = p1Total + p2Total;
+    let percent = total === 0 ? 50 : (p2Total / total) * 100;
+
+    bar.style.width = percent + "%";
   }
 
   document.getElementById("search").addEventListener("input", renderDragons);
 
-  renderDragons();
-
   window.checkTrade = checkTrade;
+
+  renderDragons();
 });
 </script>
