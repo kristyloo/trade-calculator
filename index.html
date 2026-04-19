@@ -21,17 +21,23 @@
 
     /* FIXED BOX ALIGNMENT */
     .trade-box {
-      background: rgba(255,255,255,0.04);
-      padding: 10px 15px 18px 20px;
-      border-radius: 15px;
-      width: 340px;
+      background: rgba(255,255,255,0.04); 
+      padding: 25px 20px 25px 20px; /* more even space all around */
+      border-radius: 15px; 
+      width: 380px; /* slightly wider so slots don’t press edges */
+      box-sizing: border-box;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* keeps grid centered inside */
     }
 
     .slots {
-      display: grid;
+      display: grid;  
       grid-template-columns: repeat(3, 110px);
-      gap: 10px;
+      gap: 12px; /* slightly bigger spacing */
       justify-content: center;
+      margin-top: 10px; /* pushes slots down from the title */
     }
 
     .slot {
