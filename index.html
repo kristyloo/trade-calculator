@@ -19,9 +19,10 @@
       margin-top: 20px;
     }
 
+    /* FIXED BOX ALIGNMENT */
     .trade-box {
       background: rgba(255,255,255,0.04);
-      padding: 15px;
+      padding: 10px 15px 18px 20px;
       border-radius: 15px;
       width: 340px;
     }
@@ -39,15 +40,18 @@
       background: #1e293b;
       border: 2px solid #334155;
       border-radius: 12px;
+
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
+
       font-size: 12px;
       padding: 6px;
       overflow: hidden;
     }
 
+    /* DRAGON IMAGE SIZE */
     .slot img {
       width: 72px;
       height: 72px;
@@ -55,7 +59,7 @@
       object-fit: contain;
     }
 
-/* potion / legendary icons */
+    /* ICON ROW */
     .icon-row {
       display: flex;
       justify-content: center;
@@ -63,9 +67,8 @@
       margin-top: 5px;
     }
 
-
     .icon-row img {
-      width: 26px;  
+      width: 26px;
       height: 26px;
       object-fit: contain;
     }
@@ -199,13 +202,11 @@
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 
-<!-- POPUP -->
 <div class="popup" id="popup">
   <input id="searchBox" placeholder="Search dragons..." oninput="filterDragons()">
   <div id="dragonList" class="dragon-list"></div>
 </div>
 
-<!-- OPTIONS POPUP -->
 <div class="popup" id="optionsPopup">
 
   <h3>Dragon Options</h3>
@@ -241,7 +242,6 @@ const dragons = [
   { name:"Impiavolo", value:"800K", type:"world", img:"https://static.wikia.nocookie.net/dragon-adventures/images/3/39/Impiavolo_Icon.png" }
 ];
 
-/* ✅ FIXED: now includes EVENT type */
 const bonuses = {
   mutation: {
     world: 250000,
@@ -375,6 +375,7 @@ function remove(side,i){
   update();
 }
 
+/* ✅ NEW WFL SYSTEM */
 function update(){
   render();
 
@@ -382,23 +383,27 @@ function update(){
   let t=them.reduce((s,i)=>s+getFinalValue(i),0);
 
   let diff=t-y;
-  let p=diff/Math.max(y,t||1);
+
+  let label="";
+
+  if(diff===0){
+    label="FAIR TRADE";
+  }
+  else if(Math.abs(diff)<1_000_000){
+    label=diff>0?"SMALL WIN":"SMALL LOSS";
+  }
+  else{
+    label=diff>0?"BIG WIN":"BIG LOSS";
+  }
 
   let bar=wfl;
-  let width=50+p*50;
-  width=Math.max(0,Math.min(100,width));
+  let w=50+(diff/Math.max(y,t||1))*50;
+  w=Math.max(0,Math.min(100,w));
 
-  bar.style.width=width+"%";
-  bar.style.background=p>0.1?"#22c55e":p<-0.1?"#ef4444":"#facc15";
-
-  let a=Math.abs(p);
-  let label=a<0.1?"FAIR TRADE":
-            p>0.3?"BIG WIN":
-            p>0.1?"SMALL WIN":
-            p<-0.3?"BIG LOSS":"SMALL LOSS";
+  bar.style.width=w+"%";
+  bar.style.background=diff>0?"#22c55e":diff<0?"#ef4444":"#facc15";
 
   wflText.innerText=label;
-
   result.innerText=`You: ${y.toLocaleString()} | Them: ${t.toLocaleString()}`;
 }
 
