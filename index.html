@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dragon Adventures Trade Calculator</title>
+  <title>Dragon Trade UI</title>
 
   <style>
     body {
@@ -20,22 +20,19 @@
       margin-bottom: 20px;
     }
 
+    /* 🔥 THIS IS THE IMPORTANT PART (SPACING FIX) */
     .container {
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      gap: 120px; 
+      gap: 140px; /* BIG CLEAR SPACE BETWEEN YOU AND THEM */
       margin-top: 20px;
     }
-    
+
     .trade-box {
       background: rgba(255,255,255,0.04);
       padding: 15px;
       border-radius: 15px;
-      min-height: 420px;
-    }
-
-    .trade-box {
       width: 320px;
     }
 
@@ -43,6 +40,7 @@
       display: grid;
       grid-template-columns: repeat(3, 110px);
       gap: 10px;
+      justify-content: center;
     }
 
     .slot {
@@ -115,7 +113,7 @@
       border-radius: 10px;
       overflow: hidden;
     }
-    
+
     #wfl {
       height: 100%;
       width: 50%;
@@ -127,10 +125,11 @@
 
 <body>
 
-<h1>Dragon Adventures Trade Calculator</h1>
+<h1>Dragon Trade Calculator</h1>
 
 <input id="search" placeholder="Search dragons...">
 
+<!-- 🔥 YOU / THEM LAYOUT -->
 <div class="container">
 
   <div class="trade-box">
@@ -198,7 +197,7 @@ function buildCatalog() {
   });
 }
 
-// RENDER SLOTS
+// RENDER
 function render() {
   draw("youSlots", you, 1);
   draw("themSlots", them, 2);
@@ -232,7 +231,7 @@ function draw(id, list, side) {
   }
 }
 
-// ADD ITEM
+// ADD
 function add(side) {
 
   if (!selectedDragon) {
@@ -246,7 +245,7 @@ function add(side) {
   update();
 }
 
-// REMOVE ITEM
+// REMOVE
 function remove(side, i) {
   if (side === 1) you.splice(i, 1);
   else them.splice(i, 1);
@@ -254,7 +253,7 @@ function remove(side, i) {
   update();
 }
 
-// UPDATE EVERYTHING
+// UPDATE
 function update() {
 
   render();
@@ -281,16 +280,6 @@ function update() {
   bar.style.width = width + "%";
   bar.style.background = percent > 0 ? "#22c55e" : "#ef4444";
 }
-
-// SEARCH (optional simple filter)
-document.getElementById("search").addEventListener("input", function () {
-  const val = this.value.toLowerCase();
-  const boxes = document.querySelectorAll(".dragon");
-
-  boxes.forEach(b => {
-    b.style.display = b.innerText.toLowerCase().includes(val) ? "block" : "none";
-  });
-});
 
 // START
 buildCatalog();
