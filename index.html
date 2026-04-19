@@ -81,27 +81,22 @@
 
 <h1>Dragon Adventures Value Calculator</h1>
 
-<!-- SEARCH -->
 <input id="search" placeholder="Search dragons..." oninput="renderDragons()">
 
-<!-- PLAYER 1 -->
 <div class="section">
   <h2>You</h2>
-  <div id="youInput" class="dragon-grid"></div>
+  <div id="youBox" class="dragon-grid"></div>
 </div>
 
-<!-- PLAYER 2 -->
 <div class="section">
   <h2>Them</h2>
-  <div id="themInput" class="dragon-grid"></div>
+  <div id="themBox" class="dragon-grid"></div>
 </div>
 
 <button onclick="checkTrade()">Check Trade</button>
 
 <div id="result"></div>
 
-<script>
-//  DATABASE
 <script>
 
 const dragons = [
@@ -114,7 +109,7 @@ const dragons = [
 let p1 = 0;
 let p2 = 0;
 
-// VALUE PARSER (K / M FIX)
+// VALUE PARSER (K / M SUPPORT)
 function parseValue(input) {
   if (!input) return 0;
 
@@ -131,12 +126,12 @@ function parseValue(input) {
   return parseFloat(input) || 0;
 }
 
-// RENDER DRAGONS (FIXED IDS)
+// RENDER DRAGONS
 function renderDragons() {
   const search = document.getElementById("search").value.toLowerCase();
 
-  const youBox = document.getElementById("youInput");
-  const themBox = document.getElementById("themInput");
+  const youBox = document.getElementById("youBox");
+  const themBox = document.getElementById("themBox");
 
   youBox.innerHTML = "";
   themBox.innerHTML = "";
@@ -145,7 +140,7 @@ function renderDragons() {
     .filter(d => d.name.toLowerCase().includes(search))
     .forEach(d => {
 
-      // YOU
+      // YOU CARD
       const card1 = document.createElement("div");
       card1.className = "dragon";
       card1.innerHTML = `
@@ -154,7 +149,7 @@ function renderDragons() {
       `;
       card1.onclick = () => selectDragon(1, d.value, card1);
 
-      // THEM
+      // THEM CARD
       const card2 = document.createElement("div");
       card2.className = "dragon";
       card2.innerHTML = `
@@ -168,20 +163,20 @@ function renderDragons() {
     });
 }
 
-// SELECT
+// SELECT DRAGON
 function selectDragon(player, value, element) {
 
   const parent = element.parentNode;
   parent.querySelectorAll(".dragon").forEach(el => el.classList.remove("selected"));
   element.classList.add("selected");
 
-  const numeric = parseValue(value);
+  const numericValue = parseValue(value);
 
-  if (player === 1) p1 = numeric;
-  else p2 = numeric;
+  if (player === 1) p1 = numericValue;
+  else p2 = numericValue;
 }
 
-// CHECK TRADE
+// TRADE CHECK
 function checkTrade() {
 
   if (!p1 || !p2) {
@@ -213,3 +208,6 @@ function checkTrade() {
 renderDragons();
 
 </script>
+
+</body>
+</html>
