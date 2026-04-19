@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dragon Trade Calculator</title>
+  <title>Dragon Adventures Value Calculator</title>
 
   <style>
     body {
@@ -79,21 +79,21 @@
 
 <body>
 
-<h1>🐉 Dragon Trade Calculator</h1>
+<h1>Dragon Adventures Value Calculator</h1>
 
 <!-- SEARCH -->
 <input id="search" placeholder="Search dragons..." oninput="renderDragons()">
 
 <!-- PLAYER 1 -->
 <div class="section">
-  <h2>Player 1</h2>
-  <div id="p1-list" class="dragon-grid"></div>
+  <h2>You</h2>
+  <div id="youInput" class="dragon-grid"></div>
 </div>
 
 <!-- PLAYER 2 -->
 <div class="section">
-  <h2>Player 2</h2>
-  <div id="p2-list" class="dragon-grid"></div>
+  <h2>Them</h2>
+  <div id="themInput" class="dragon-grid"></div>
 </div>
 
 <button onclick="checkTrade()">Check Trade</button>
@@ -103,10 +103,10 @@
 <script>
 //  DATABASE
 const dragons = [
-  { name: "Veidreki", value: 35000000, img: "img: https://static.wikia.nocookie.net/dragon-adventures/images/a/aa/Veidreki_Icon.png" },
-  { name: "Alatura", value: 17000000, img: "https://static.wikia.nocookie.net/dragon-adventures/images/d/d0/Alatura_Icon.png" },
-  { name: "Moixura", value: 10000000, img: "https://static.wikia.nocookie.net/dragon-adventures/images/2/27/Moixaura_Icon.png" },
-  { name: "Venid", value: 2000, img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" }
+  { name: "Veidreki", value: 35M, img: "https://static.wikia.nocookie.net/dragon-adventures/images/a/aa/Veidreki_Icon.png" },
+  { name: "Alatura", value: 17M, img: "https://static.wikia.nocookie.net/dragon-adventures/images/d/d0/Alatura_Icon.png" },
+  { name: "Moixura", value: 10M, img: "https://static.wikia.nocookie.net/dragon-adventures/images/2/27/Moixaura_Icon.png" },
+  { name: "Venid", value: 2K, img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" }
 ];
 
 let p1 = 0;
@@ -165,19 +165,29 @@ function checkTrade() {
 
   if (!p1 || !p2) {
     document.getElementById("result").innerText =
-      "Pick dragons for both players first!";
+      "Pick dragons for both sides first!";
     return;
   }
 
-  let ratio = p1 / p2;
+  let diff = p1 - p2;
+  let percent = diff / Math.max(p1, p2);
+
   let result = "";
 
-  if (ratio > 1.2) result = "Player 1 WIN 🟢";
-  else if (ratio < 0.8) result = "Player 2 WIN 🔴";
-  else result = "FAIR TRADE ⚖️";
+  if (Math.abs(percent) < 0.1) {
+    result = "FAIR TRADE";
+  } 
+  else if (percent > 0) {
+    if (percent > 0.5) result = "HUGE WIN FOR YOU";
+    else result = "WIN FOR YOU";
+  } 
+  else {
+    if (percent < -0.5) result = "HUGE LOSS FOR YOU";
+    else result = "LOSS FOR YOU";
+  }
 
   document.getElementById("result").innerText =
-    `P1: ${p1} | P2: ${p2} → ${result}`;
+    `You: ${p1} | Them: ${p2} → ${result}`;
 }
 
 // start page
