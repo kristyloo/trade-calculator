@@ -20,18 +20,18 @@
       margin-bottom: 20px;
     }
 
-    .trade-container {
+    .container {
       display: flex;
       justify-content: center;
-      gap: 50px;
+      gap: 40px;
       margin-top: 20px;
     }
 
-    .trade-box h2 {
-      margin-bottom: 10px;
+    .trade-box {
+      width: 320px;
     }
 
-    .slot-grid {
+    .slots {
       display: grid;
       grid-template-columns: repeat(3, 110px);
       gap: 10px;
@@ -39,60 +39,76 @@
 
     .slot {
       width: 110px;
-      height: 110px;
+      height: 120px;
       background: #1e293b;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
       flex-direction: column;
-      font-size: 14px;
+      font-size: 12px;
+      padding: 5px;
+    }
+
+    .slot img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
     }
 
     .slot button {
       margin-top: 5px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .add {
+      background: #38bdf8;
       border: none;
+      padding: 5px;
       border-radius: 5px;
-      cursor: pointer;
-      padding: 3px 6px;
     }
 
-    .add-btn {
-      font-size: 20px;
-      background: #38bdf8;
-    }
-
-    .remove-btn {
+    .remove {
       background: #ef4444;
-      color: white;
-    }
-
-    button.main {
-      margin-top: 20px;
-      padding: 10px 20px;
       border: none;
-      border-radius: 10px;
-      background: #38bdf8;
-      cursor: pointer;
-      font-size: 16px;
+      color: white;
+      padding: 3px;
+      border-radius: 5px;
     }
 
-    #result {
+    .catalog {
       margin-top: 20px;
-      font-size: 22px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .bar-container {
+    .dragon {
+      background: #334155;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 110px;
+    }
+
+    .dragon img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+    }
+
+    .bar {
       width: 80%;
-      height: 20px;
+      height: 18px;
       background: #334155;
       margin: 20px auto;
       border-radius: 10px;
       overflow: hidden;
     }
 
-    #wflBar {
+    #wfl {
       height: 100%;
       width: 50%;
       background: #22c55e;
@@ -107,61 +123,80 @@
 
 <input id="search" placeholder="Search dragons...">
 
-<div class="trade-container">
+<div class="container">
 
   <div class="trade-box">
     <h2>You</h2>
-    <div id="youSlots" class="slot-grid"></div>
+    <div id="youSlots" class="slots"></div>
   </div>
 
   <div class="trade-box">
     <h2>Them</h2>
-    <div id="themSlots" class="slot-grid"></div>
+    <div id="themSlots" class="slots"></div>
   </div>
 
 </div>
 
-<button class="main" onclick="updateTrade()">Check Trade</button>
+<h3>Select Dragon</h3>
+<div id="catalog" class="catalog"></div>
+
+<div class="bar">
+  <div id="wfl"></div>
+</div>
 
 <div id="result"></div>
-
-<div class="bar-container">
-  <div id="wflBar"></div>
-</div>
 
 <script>
 
 const dragons = [
-  { name: "Veidreki", value: "35M" },
-  { name: "Alatura", value: "17M" },
-  { name: "Moixura", value: "10M" },
-  { name: "Venid", value: "2K" }
+  { name: "Veidreki", value: "35M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/a/aa/Veidreki_Icon.png" },
+  { name: "Alatura", value: "17M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/d/d0/Alatura_Icon.png" },
+  { name: "Moixura", value: "10M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/2/27/Moixaura_Icon.png" },
+  { name: "Venid", value: "2K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" }
 ];
 
-let youItems = [];
-let themItems = [];
+let you = [];
+let them = [];
+
+let selectedDragon = null;
 
 const MAX = 9;
 
 // VALUE PARSER
-function parseValue(v) {
-  if (!v) return 0;
+function parse(v) {
+  v = v.toUpperCase();
+  if (v.includes("M")) return parseFloat(v) * 1_000_000;
+  if (v.includes("K")) return parseFloat(v) * 1_000;
+  return parseFloat(v);
+}
 
-  v = v.toString().toUpperCase().trim();
+// BUILD CATALOG
+function buildCatalog() {
+  const box = document.getElementById("catalog");
 
-  if (v.endsWith("M")) return parseFloat(v) * 1_000_000;
-  if (v.endsWith("K")) return parseFloat(v) * 1_000;
+  dragons.forEach(d => {
+    const div = document.createElement("div");
+    div.className = "dragon";
 
-  return parseFloat(v) || 0;
+    div.innerHTML = `
+      <img src="${d.img}">
+      <div>${d.name}</div>
+      <small>${d.value}</small>
+    `;
+
+    div.onclick = () => selectedDragon = d;
+
+    box.appendChild(div);
+  });
 }
 
 // RENDER SLOTS
-function renderSlots() {
-  renderSide("youSlots", youItems, 1);
-  renderSide("themSlots", themItems, 2);
+function render() {
+  draw("youSlots", you, 1);
+  draw("themSlots", them, 2);
 }
 
-function renderSide(id, list, player) {
+function draw(id, list, side) {
 
   const box = document.getElementById(id);
   box.innerHTML = "";
@@ -175,12 +210,13 @@ function renderSide(id, list, player) {
 
     if (item) {
       slot.innerHTML = `
-        <div>${item.name}</div>
-        <button class="remove-btn" onclick="removeItem(${player}, ${i})">➖</button>
+        <img src="${item.img}">
+        <small>${item.name}</small>
+        <button class="remove" onclick="remove(${side}, ${i})">➖</button>
       `;
     } else {
       slot.innerHTML = `
-        <button class="add-btn" onclick="addItem(${player})">➕</button>
+        <button class="add" onclick="add(${side})">➕</button>
       `;
     }
 
@@ -189,73 +225,69 @@ function renderSide(id, list, player) {
 }
 
 // ADD ITEM
-function addItem(player) {
+function add(side) {
 
-  const dragon = dragons[Math.floor(Math.random() * dragons.length)];
-
-  if (player === 1 && youItems.length < MAX) {
-    youItems.push(dragon);
+  if (!selectedDragon) {
+    alert("Select a dragon first!");
+    return;
   }
 
-  if (player === 2 && themItems.length < MAX) {
-    themItems.push(dragon);
-  }
+  if (side === 1 && you.length < MAX) you.push(selectedDragon);
+  if (side === 2 && them.length < MAX) them.push(selectedDragon);
 
-  updateTrade();
+  update();
 }
 
 // REMOVE ITEM
-function removeItem(player, index) {
+function remove(side, i) {
+  if (side === 1) you.splice(i, 1);
+  else them.splice(i, 1);
 
-  if (player === 1) youItems.splice(index, 1);
-  else themItems.splice(index, 1);
-
-  updateTrade();
+  update();
 }
 
-// UPDATE TRADE
-function updateTrade() {
+// UPDATE EVERYTHING
+function update() {
 
-  renderSlots();
+  render();
 
-  let youTotal = youItems.reduce((a, b) => a + parseValue(b.value), 0);
-  let themTotal = themItems.reduce((a, b) => a + parseValue(b.value), 0);
+  let youVal = you.reduce((a,b)=>a+parse(b.value),0);
+  let themVal = them.reduce((a,b)=>a+parse(b.value),0);
 
-  let diff = themTotal - youTotal;
-  let percent = diff / Math.max(youTotal, themTotal || 1);
+  let diff = themVal - youVal;
+  let percent = diff / Math.max(youVal, themVal || 1);
 
   let text = "";
 
   if (Math.abs(percent) < 0.1) text = "FAIR TRADE";
-  else if (percent > 0) text = percent > 0.5 ? "HUGE WIN FOR YOU" : "WIN FOR YOU";
-  else text = percent < -0.5 ? "HUGE LOSS FOR YOU" : "LOSS FOR YOU";
+  else if (percent > 0) text = "WIN FOR YOU";
+  else text = "LOSS FOR YOU";
 
   document.getElementById("result").innerText =
-    `You: ${youTotal.toLocaleString()} | Them: ${themTotal.toLocaleString()} → ${text}`;
+    `You: ${youVal.toLocaleString()} | Them: ${themVal.toLocaleString()} → ${text}`;
 
-  updateBar(percent);
-}
-
-// WFL BAR
-function updateBar(percent) {
-
-  let bar = document.getElementById("wflBar");
-
+  let bar = document.getElementById("wfl");
   let width = 50 + percent * 50;
   width = Math.max(0, Math.min(100, width));
 
   bar.style.width = width + "%";
-
-  if (percent > 0) {
-    bar.style.background = "#22c55e"; // green
-  } else {
-    bar.style.background = "#ef4444"; // red
-  }
+  bar.style.background = percent > 0 ? "#22c55e" : "#ef4444";
 }
 
+// SEARCH (optional simple filter)
+document.getElementById("search").addEventListener("input", function () {
+  const val = this.value.toLowerCase();
+  const boxes = document.querySelectorAll(".dragon");
+
+  boxes.forEach(b => {
+    b.style.display = b.innerText.toLowerCase().includes(val) ? "block" : "none";
+  });
+});
+
 // START
-renderSlots();
-updateTrade();
+buildCatalog();
+render();
+update();
 
 </script>
 
