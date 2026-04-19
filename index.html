@@ -102,31 +102,50 @@
 
 <script>
 //  DATABASE
+<script>
+
 const dragons = [
-  { name: "Veidreki", value: 35M, img: "https://static.wikia.nocookie.net/dragon-adventures/images/a/aa/Veidreki_Icon.png" },
-  { name: "Alatura", value: 17M, img: "https://static.wikia.nocookie.net/dragon-adventures/images/d/d0/Alatura_Icon.png" },
-  { name: "Moixura", value: 10M, img: "https://static.wikia.nocookie.net/dragon-adventures/images/2/27/Moixaura_Icon.png" },
-  { name: "Venid", value: 2K, img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" }
+  { name: "Veidreki", value: "35M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/a/aa/Veidreki_Icon.png" },
+  { name: "Alatura", value: "17M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/d/d0/Alatura_Icon.png" },
+  { name: "Moixura", value: "10M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/2/27/Moixaura_Icon.png" },
+  { name: "Venid", value: "2K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" }
 ];
 
 let p1 = 0;
 let p2 = 0;
 
-// RENDER FUNCTION (SEARCH FILTER INCLUDED)
+// VALUE PARSER (K / M FIX)
+function parseValue(input) {
+  if (!input) return 0;
+
+  input = input.toString().toUpperCase().trim();
+
+  if (input.endsWith("M")) {
+    return parseFloat(input) * 1_000_000;
+  }
+
+  if (input.endsWith("K")) {
+    return parseFloat(input) * 1_000;
+  }
+
+  return parseFloat(input) || 0;
+}
+
+// RENDER DRAGONS (FIXED IDS)
 function renderDragons() {
   const search = document.getElementById("search").value.toLowerCase();
 
-  const p1List = document.getElementById("p1-list");
-  const p2List = document.getElementById("p2-list");
+  const youBox = document.getElementById("youInput");
+  const themBox = document.getElementById("themInput");
 
-  p1List.innerHTML = "";
-  p2List.innerHTML = "";
+  youBox.innerHTML = "";
+  themBox.innerHTML = "";
 
   dragons
     .filter(d => d.name.toLowerCase().includes(search))
     .forEach(d => {
 
-      // PLAYER 1 CARD
+      // YOU
       const card1 = document.createElement("div");
       card1.className = "dragon";
       card1.innerHTML = `
@@ -135,7 +154,7 @@ function renderDragons() {
       `;
       card1.onclick = () => selectDragon(1, d.value, card1);
 
-      // PLAYER 2 CARD
+      // THEM
       const card2 = document.createElement("div");
       card2.className = "dragon";
       card2.innerHTML = `
@@ -144,23 +163,25 @@ function renderDragons() {
       `;
       card2.onclick = () => selectDragon(2, d.value, card2);
 
-      p1List.appendChild(card1);
-      p2List.appendChild(card2);
+      youBox.appendChild(card1);
+      themBox.appendChild(card2);
     });
 }
 
-// SELECT DRAGON
+// SELECT
 function selectDragon(player, value, element) {
 
   const parent = element.parentNode;
   parent.querySelectorAll(".dragon").forEach(el => el.classList.remove("selected"));
   element.classList.add("selected");
 
-  if (player === 1) p1 = value;
-  else p2 = value;
+  const numeric = parseValue(value);
+
+  if (player === 1) p1 = numeric;
+  else p2 = numeric;
 }
 
-// TRADE CHECK
+// CHECK TRADE
 function checkTrade() {
 
   if (!p1 || !p2) {
@@ -178,21 +199,17 @@ function checkTrade() {
     result = "FAIR TRADE";
   } 
   else if (percent > 0) {
-    if (percent > 0.5) result = "HUGE WIN FOR YOU";
-    else result = "WIN FOR YOU";
+    result = percent > 0.5 ? "HUGE WIN FOR YOU" : "WIN FOR YOU";
   } 
   else {
-    if (percent < -0.5) result = "HUGE LOSS FOR YOU";
-    else result = "LOSS FOR YOU";
+    result = percent < -0.5 ? "HUGE LOSS FOR YOU" : "LOSS FOR YOU";
   }
 
   document.getElementById("result").innerText =
-    `You: ${p1} | Them: ${p2} → ${result}`;
+    `You: ${p1.toLocaleString()} | Them: ${p2.toLocaleString()} → ${result}`;
 }
 
-// start page
+// START
 renderDragons();
-</script>
 
-</body>
-</html>
+</script>
