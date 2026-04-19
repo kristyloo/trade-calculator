@@ -33,18 +33,21 @@
       justify-content: center;
     }
 
+    /* SLOT FIX (NO CLIPPING) */
     .slot {
       width: 110px;
-      height: 135px;
+      height: 145px;
       background: #1e293b;
       border: 2px solid #334155;
       border-radius: 12px;
+
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+
       font-size: 12px;
-      padding: 5px;
+      padding: 6px;
       overflow: hidden;
     }
 
@@ -52,6 +55,20 @@
       width: 60px;
       height: 60px;
       border-radius: 8px;
+    }
+
+    /* ICON ROW FIX */
+    .icon-row {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 5px;
+    }
+
+    .icon-row img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
     }
 
     .add {
@@ -71,6 +88,7 @@
       cursor: pointer;
     }
 
+    /* POPUP */
     .popup {
       display: none;
       position: fixed;
@@ -81,8 +99,9 @@
       border: 2px solid #334155;
       border-radius: 15px;
       width: 420px;
-      padding: 15px;
+      padding: 18px;
       z-index: 1000;
+      text-align: left;
     }
 
     .overlay {
@@ -139,12 +158,6 @@
       font-weight: bold;
     }
 
-    .slot div img {
-      width: 10px !important;
-      height: 10px !important;
-      object-fit: contain;
-    }
-
     input {
       width: 95%;
       padding: 8px;
@@ -152,12 +165,18 @@
       border-radius: 8px;
       border: none;
     }
+
+    .popup label {
+      display: block;
+      margin: 8px 0;
+      font-size: 14px;
+    }
   </style>
 </head>
 
 <body>
 
-<h1>Dragon testing 123 Adventures Trade Calculator</h1>
+<h1>Dragon Adventures Trade Calculator</h1>
 
 <div class="container">
 
@@ -188,16 +207,27 @@
   <div id="dragonList" class="dragon-list"></div>
 </div>
 
-<!-- OPTIONS -->
+<!-- OPTIONS POPUP -->
 <div class="popup" id="optionsPopup">
+
   <h3>Dragon Options</h3>
 
-  <label><input type="checkbox" id="mut"> Mutation</label><br>
-  <label><input type="checkbox" id="legC"> Legendary Color</label><br>
-  <label><input type="checkbox" id="legE"> Legendary Eye</label><br>
+  <label><input type="checkbox" id="mut"> Mutation</label>
+  <label><input type="checkbox" id="legC"> Legendary Color</label>
+  <label><input type="checkbox" id="legE"> Legendary Eye</label>
 
-  <br>
-  <button onclick="confirmAdd()">Add Dragon</button>
+  <br><br>
+
+  <button style="
+    background:#38bdf8;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+  " onclick="confirmAdd()">
+    Add Dragon
+  </button>
+
 </div>
 
 <script>
@@ -219,34 +249,29 @@ const bonuses = {
   legEye: { world:500000, season:1000000, guild:1000000 }
 };
 
-let you = [];
-let them = [];
-let activeSide = null;
-let pendingDragon = null;
-
-const MAX = 9;
+let you=[], them=[], activeSide=null, pendingDragon=null;
+const MAX=9;
 
 function parse(v){
-  v = v.toUpperCase();
-  if(v.includes("M")) return parseFloat(v)*1000000;
-  if(v.includes("K")) return parseFloat(v)*1000;
+  v=v.toUpperCase();
+  if(v.includes("M")) return parseFloat(v)*1e6;
+  if(v.includes("K")) return parseFloat(v)*1e3;
   return parseFloat(v);
 }
 
 function getFinalValue(item){
-  let base = parse(item.base.value);
-  let extra = 0;
+  let base=parse(item.base.value), extra=0;
 
-  if(item.mutation) extra += bonuses.mutation[item.base.type] || 0;
-  if(item.legColor) extra += bonuses.legColor[item.base.type] || 0;
-  if(item.legEye) extra += bonuses.legEye[item.base.type] || 0;
+  if(item.mutation) extra+=bonuses.mutation[item.base.type]||0;
+  if(item.legColor) extra+=bonuses.legColor[item.base.type]||0;
+  if(item.legEye) extra+=bonuses.legEye[item.base.type]||0;
 
-  return base + extra;
+  return base+extra;
 }
 
 function render(){
-  draw("youSlots", you,1);
-  draw("themSlots", them,2);
+  draw("youSlots",you,1);
+  draw("themSlots",them,2);
 }
 
 function draw(id,list,side){
@@ -254,7 +279,6 @@ function draw(id,list,side){
   box.innerHTML="";
 
   for(let i=0;i<MAX;i++){
-
     let slot=document.createElement("div");
     slot.className="slot";
 
@@ -265,7 +289,7 @@ function draw(id,list,side){
         <img src="${item.base.img}">
         <small>${item.base.name}</small>
 
-        <div style="display:flex;gap:3px;margin-top:4px;justify-content:center;">
+        <div class="icon-row">
           ${item.mutation ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/e/ec/Mutation_Potion.png">' : ""}
           ${item.legColor ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/4/4f/Legendary_Color_Potion.png">' : ""}
           ${item.legEye ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/f/f9/Legendary_Pupil_Potion.png">' : ""}
@@ -301,12 +325,7 @@ function renderDragonList(list){
   list.forEach(d=>{
     let div=document.createElement("div");
     div.className="dragon-card";
-
-    div.innerHTML=`
-      <img src="${d.img}">
-      <div>${d.name}</div>
-    `;
-
+    div.innerHTML=`<img src="${d.img}"><div>${d.name}</div>`;
     div.onclick=()=>addDragon(d);
     box.appendChild(div);
   });
@@ -323,12 +342,11 @@ function addDragon(d){
 }
 
 function confirmAdd(){
-
   let item={
     base:pendingDragon,
-    mutation:document.getElementById("mut").checked,
-    legColor:document.getElementById("legC").checked,
-    legEye:document.getElementById("legE").checked
+    mutation:mut.checked,
+    legColor:legC.checked,
+    legEye:legE.checked
   };
 
   if(activeSide===1 && you.length<MAX) you.push(item);
@@ -339,45 +357,39 @@ function confirmAdd(){
 }
 
 function remove(side,i){
-  if(side===1) you.splice(i,1);
-  else them.splice(i,1);
+  side===1 ? you.splice(i,1) : them.splice(i,1);
   update();
 }
 
 function update(){
-
   render();
 
-  let youVal=you.reduce((s,i)=>s+getFinalValue(i),0);
-  let themVal=them.reduce((s,i)=>s+getFinalValue(i),0);
+  let y=you.reduce((s,i)=>s+getFinalValue(i),0);
+  let t=them.reduce((s,i)=>s+getFinalValue(i),0);
 
-  let diff=themVal-youVal;
-  let percent=diff/Math.max(youVal,themVal||1);
+  let diff=t-y;
+  let p=diff/Math.max(y,t||1);
 
   let bar=document.getElementById("wfl");
-  let width=50+percent*50;
-  width=Math.max(0,Math.min(100,width));
+  let w=50+p*50;
+  w=Math.max(0,Math.min(100,w));
 
-  bar.style.width=width+"%";
-
-  bar.style.background =
-    percent > 0.1 ? "#22c55e" :
-    percent < -0.1 ? "#ef4444" :
+  bar.style.width=w+"%";
+  bar.style.background=
+    p>0.1?"#22c55e":
+    p<-0.1?"#ef4444":
     "#facc15";
 
-  let label="";
-  let a=Math.abs(percent);
-
-  if(a<0.1) label="FAIR TRADE";
-  else if(percent>0.3) label="BIG WIN";
-  else if(percent>0.1) label="SMALL WIN";
-  else if(percent<-0.3) label="BIG LOSS";
-  else label="SMALL LOSS";
+  let a=Math.abs(p);
+  let label=a<0.1?"FAIR TRADE":
+            p>0.3?"BIG WIN":
+            p>0.1?"SMALL WIN":
+            p<-0.3?"BIG LOSS":"SMALL LOSS";
 
   document.getElementById("wflText").innerText=label;
 
   document.getElementById("result").innerText=
-    `You: ${youVal.toLocaleString()} | Them: ${themVal.toLocaleString()}`;
+    `You: ${y.toLocaleString()} | Them: ${t.toLocaleString()}`;
 }
 
 render();
