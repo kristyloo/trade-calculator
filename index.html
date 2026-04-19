@@ -1,348 +1,252 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dragon Adventures Trade Calculator</title>
+<title>Dragon Trade Calculator</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: #0f172a;
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
 
-    .container {
-      display: flex;
-      justify-content: center;
-      gap: 120px;
-      margin-top: 20px;
-    }
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 120px;
+}
 
-    .trade-box {
-      background: rgba(255,255,255,0.04);
-      padding: 15px;
-      border-radius: 15px;
-      width: 340px;
-    }
+.trade-box {
+  background: rgba(255,255,255,0.04);
+  padding: 15px;
+  border-radius: 15px;
+  width: 340px;
+}
 
-    .slots {
-      display: grid;
-      grid-template-columns: repeat(3, 110px);
-      gap: 10px;
-      justify-content: center;
-    }
+.slots {
+  display: grid;
+  grid-template-columns: repeat(3, 110px);
+  gap: 10px;
+}
 
-    /* 🔥 FIXED SLOT BORDER (STRONGER + CLEAR) */
-    .slot {
-      width: 110px;
-      height: 120px;
-      background: #1e293b;
-      border-radius: 12px;
-      border: 2px solid #334155; /* stronger visible border */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      font-size: 12px;
-      padding: 5px;
-    }
+.slot {
+  width: 110px;
+  height: 120px;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
-    .slot img {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-    }
+.slot img {
+  width: 60px;
+}
 
-    .slot button {
-      margin-top: 5px;
-      cursor: pointer;
-    }
+.add { background:#38bdf8; border:none; }
+.remove { background:#ef4444; border:none; color:white; }
 
-    .add {
-      background: #38bdf8;
-      border: none;
-      padding: 5px;
-      border-radius: 5px;
-    }
+.popup {
+  display:none;
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background:#0f172a;
+  padding:15px;
+  border-radius:12px;
+}
 
-    .remove {
-      background: #ef4444;
-      border: none;
-      color: white;
-      padding: 3px;
-      border-radius: 5px;
-    }
-
-    /* 🔥 POPUP SYSTEM (ADOPT ME STYLE) */
-    .popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #0f172a;
-      border: 2px solid #334155;
-      border-radius: 15px;
-      width: 420px;
-      padding: 15px;
-      z-index: 1000;
-    }
-
-    .popup input {
-      width: 90%;
-      padding: 8px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      border: none;
-    }
-
-    .dragon-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .dragon-card {
-      background: #334155;
-      padding: 10px;
-      border-radius: 10px;
-      width: 100px;
-      cursor: pointer;
-    }
-
-    .dragon-card img {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-    }
-
-    .bar {
-      width: 80%;
-      height: 18px;
-      background: #334155;
-      margin: 20px auto;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    #wfl {
-      height: 100%;
-      width: 50%;
-      background: #22c55e;
-      transition: 0.3s;
-    }
-
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      z-index: 999;
-    }
-  </style>
+.overlay {
+  display:none;
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+}
+</style>
 </head>
 
 <body>
 
-<h1>Dragon Adventures Trade Calculator</h1>
+<h1>Dragon Trade Calculator</h1>
 
 <div class="container">
 
-  <div class="trade-box">
-    <h2>You</h2>
-    <div id="youSlots" class="slots"></div>
-  </div>
-
-  <div class="trade-box">
-    <h2>Them</h2>
-    <div id="themSlots" class="slots"></div>
-  </div>
-
+<div class="trade-box">
+<h2>You</h2>
+<div id="youSlots" class="slots"></div>
 </div>
 
-<div class="bar">
-  <div id="wfl"></div>
+<div class="trade-box">
+<h2>Them</h2>
+<div id="themSlots" class="slots"></div>
+</div>
+
 </div>
 
 <div id="result"></div>
 
-<!-- 🔥 POPUP -->
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 
 <div class="popup" id="popup">
+<input id="searchBox" placeholder="Search..." oninput="filterDragons()">
+<div id="dragonList"></div>
+</div>
 
-  <input id="searchBox" placeholder="Search dragons..." oninput="filterDragons()">
-
-  <div id="dragonList" class="dragon-list"></div>
-
+<!-- OPTIONS POPUP -->
+<div class="popup" id="optionsPopup">
+<h3>Options</h3>
+<label><input type="checkbox" id="mut"> Mutation</label><br>
+<label><input type="checkbox" id="legC"> Leg Color</label><br>
+<label><input type="checkbox" id="legE"> Leg Eye</label><br>
+<button onclick="confirmAdd()">Add</button>
 </div>
 
 <script>
 
 const dragons = [
-  { name: "Veidreki", value: "35M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/a/aa/Veidreki_Icon.png" },
-  { name: "Alatura", value: "17M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/d/d0/Alatura_Icon.png" },
-  { name: "Moixura", value: "10M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/2/27/Moixaura_Icon.png" },
-  { name: "Venid", value: "2K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" },
-  { name: "Voltstorm", value: "3M", img: "https://static.wikia.nocookie.net/dragon-adventures/images/7/76/Voltstorm_Icon.png" },
-  { name: "Vulpiruth", value: "50K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/b/b1/Vulpiruth_Icon.png" },
-  { name: "Djaevelhest", value: "150K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/b/b0/Djaevelhest_Icon.png" },
-  { name: "Impiavolo", value: "800K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/3/39/Impiavolo_Icon.png" }
+{ name:"Veidreki", value:"35M", type:"season", img:"https://static.wikia.nocookie.net/dragon-adventures/images/a/aa/Veidreki_Icon.png"},
+{ name:"Moixura", value:"10M", type:"season", img:"https://static.wikia.nocookie.net/dragon-adventures/images/2/27/Moixaura_Icon.png"},
+{ name:"Venid", value:"2K", type:"world", img:"https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png"}
 ];
+
+const bonuses = {
+mutation:{ world:250000, season:500000, event:300000, guild:500000 },
+legColor:{ world:500000, season:1000000, event:500000, guild:500000 },
+legEye:{ world:500000, season:1000000, event:500000, guild:1000000 }
+};
 
 let you = [];
 let them = [];
 let activeSide = null;
+let pendingDragon = null;
 
 const MAX = 9;
 
-// VALUE PARSER
-function parse(v) {
-  v = v.toUpperCase();
-  if (v.includes("M")) return parseFloat(v) * 1_000_000;
-  if (v.includes("K")) return parseFloat(v) * 1_000;
-  return parseFloat(v);
+function parse(v){
+if(v.includes("M")) return parseFloat(v)*1000000;
+if(v.includes("K")) return parseFloat(v)*1000;
+return parseFloat(v);
 }
 
-// RENDER SLOTS
-function render() {
-  draw("youSlots", you, 1);
-  draw("themSlots", them, 2);
+function getFinalValue(item){
+let base = parse(item.base.value);
+let extra = 0;
+
+if(item.mutation) extra += bonuses.mutation[item.base.type] || 0;
+if(item.legColor) extra += bonuses.legColor[item.base.type] || 0;
+if(item.legEye) extra += bonuses.legEye[item.base.type] || 0;
+
+return base + extra;
 }
 
-function draw(id, list, side) {
-
-  const box = document.getElementById(id);
-  box.innerHTML = "";
-
-  for (let i = 0; i < MAX; i++) {
-
-    const slot = document.createElement("div");
-    slot.className = "slot";
-
-    const item = list[i];
-
-    if (item) {
-      slot.innerHTML = `
-        <img src="${item.img}">
-        <small>${item.name}</small>
-        <button class="remove" onclick="remove(${side}, ${i})">➖</button>
-      `;
-    } else {
-      slot.innerHTML = `
-        <button class="add" onclick="openPopup(${side})">➕</button>
-      `;
-    }
-
-    box.appendChild(slot);
-  }
+function render(){
+draw("youSlots", you,1);
+draw("themSlots", them,2);
 }
 
-// REMOVE
-function remove(side, i) {
-  if (side === 1) you.splice(i, 1);
-  else them.splice(i, 1);
-  update();
+function draw(id,list,side){
+let box=document.getElementById(id);
+box.innerHTML="";
+
+for(let i=0;i<MAX;i++){
+let slot=document.createElement("div");
+slot.className="slot";
+
+let item=list[i];
+
+if(item){
+slot.innerHTML=`
+<img src="${item.base.img}">
+${item.base.name}
+
+<div>
+${item.mutation ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/e/ec/Mutation_Potion.png" width="14">' : ""}
+${item.legColor ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/4/4f/Legendary_Color_Potion.png" width="14">' : ""}
+${item.legEye ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/f/f9/Legendary_Pupil_Potion.png" width="14">' : ""}
+</div>
+
+<button class="remove" onclick="remove(${side},${i})">➖</button>
+`;
+}else{
+slot.innerHTML=`<button class="add" onclick="openPopup(${side})">➕</button>`;
 }
 
-// POPUP OPEN
-function openPopup(side) {
-  activeSide = side;
-
-  document.getElementById("popup").style.display = "block";
-  document.getElementById("overlay").style.display = "block";
-
-  renderDragonList(dragons);
+box.appendChild(slot);
+}
 }
 
-// CLOSE POPUP
-function closePopup() {
-  document.getElementById("popup").style.display = "none";
-  document.getElementById("overlay").style.display = "none";
+function openPopup(side){
+activeSide=side;
+document.getElementById("popup").style.display="block";
+document.getElementById("overlay").style.display="block";
+renderDragonList(dragons);
 }
 
-// DRAGON LIST
-function renderDragonList(list) {
-
-  const box = document.getElementById("dragonList");
-  box.innerHTML = "";
-
-  list.forEach(d => {
-
-    const div = document.createElement("div");
-    div.className = "dragon-card";
-
-    div.innerHTML = `
-      <img src="${d.img}">
-      <div>${d.name}</div>
-      <small>${d.value}</small>
-    `;
-
-    div.onclick = () => addDragon(d);
-
-    box.appendChild(div);
-  });
+function closePopup(){
+document.getElementById("popup").style.display="none";
+document.getElementById("overlay").style.display="none";
+document.getElementById("optionsPopup").style.display="none";
 }
 
-// SEARCH INSIDE POPUP
-function filterDragons() {
+function renderDragonList(list){
+let box=document.getElementById("dragonList");
+box.innerHTML="";
 
-  const val = document.getElementById("searchBox").value.toLowerCase();
-
-  const filtered = dragons.filter(d =>
-    d.name.toLowerCase().includes(val)
-  );
-
-  renderDragonList(filtered);
+list.forEach(d=>{
+let div=document.createElement("div");
+div.innerHTML=`${d.name} (${d.value})`;
+div.onclick=()=>addDragon(d);
+box.appendChild(div);
+});
 }
 
-// ADD DRAGON
-function addDragon(dragon) {
-
-  if (activeSide === 1 && you.length < MAX) you.push(dragon);
-  if (activeSide === 2 && them.length < MAX) them.push(dragon);
-
-  closePopup();
-  update();
+function filterDragons(){
+let val=document.getElementById("searchBox").value.toLowerCase();
+renderDragonList(dragons.filter(d=>d.name.toLowerCase().includes(val)));
 }
 
-// UPDATE TRADE
-function update() {
-
-  render();
-
-  let youVal = you.reduce((a,b)=>a+parse(b.value),0);
-  let themVal = them.reduce((a,b)=>a+parse(b.value),0);
-
-  let diff = themVal - youVal;
-  let percent = diff / Math.max(youVal, themVal || 1);
-
-  let text = "";
-
-  if (Math.abs(percent) < 0.1) text = "FAIR TRADE";
-  else if (percent > 0) text = "WIN FOR YOU";
-  else text = "LOSS FOR YOU";
-
-  document.getElementById("result").innerText =
-    `You: ${youVal.toLocaleString()} | Them: ${themVal.toLocaleString()} → ${text}`;
-
-  let bar = document.getElementById("wfl");
-  let width = 50 + percent * 50;
-  width = Math.max(0, Math.min(100, width));
-
-  bar.style.width = width + "%";
-  bar.style.background = percent > 0 ? "#22c55e" : "#ef4444";
+function addDragon(d){
+pendingDragon=d;
+document.getElementById("optionsPopup").style.display="block";
 }
 
-// START
-render();
+function confirmAdd(){
+let item={
+base:pendingDragon,
+mutation:document.getElementById("mut").checked,
+legColor:document.getElementById("legC").checked,
+legEye:document.getElementById("legE").checked
+};
+
+if(activeSide===1 && you.length<MAX) you.push(item);
+if(activeSide===2 && them.length<MAX) them.push(item);
+
+closePopup();
 update();
+}
+
+function remove(side,i){
+if(side===1) you.splice(i,1);
+else them.splice(i,1);
+update();
+}
+
+function update(){
+
+render();
+
+let youVal=you.reduce((s,i)=>s+getFinalValue(i),0);
+let themVal=them.reduce((s,i)=>s+getFinalValue(i),0);
+
+document.getElementById("result").innerText =
+`You: ${youVal.toLocaleString()} | Them: ${themVal.toLocaleString()}`;
+}
+
+render();
 
 </script>
 
