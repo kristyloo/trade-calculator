@@ -134,14 +134,24 @@
       transition: 0.3s;
     }
 
+    #wflText {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .slot div img {
+      width: 10px !important;
+      height: 10px !important;
+      object-fit: contain;
+    }
+
     input {
-      width: 90%;
+      width: 95%;
       padding: 8px;
       margin-bottom: 10px;
       border-radius: 8px;
       border: none;
     }
-
   </style>
 </head>
 
@@ -167,6 +177,7 @@
   <div id="wfl"></div>
 </div>
 
+<div id="wflText"></div>
 <div id="result"></div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
@@ -177,7 +188,7 @@
   <div id="dragonList" class="dragon-list"></div>
 </div>
 
-<!-- OPTIONS POPUP -->
+<!-- OPTIONS -->
 <div class="popup" id="optionsPopup">
   <h3>Dragon Options</h3>
 
@@ -215,7 +226,6 @@ let pendingDragon = null;
 
 const MAX = 9;
 
-// VALUE PARSER
 function parse(v){
   v = v.toUpperCase();
   if(v.includes("M")) return parseFloat(v)*1000000;
@@ -223,7 +233,6 @@ function parse(v){
   return parseFloat(v);
 }
 
-// FINAL VALUE
 function getFinalValue(item){
   let base = parse(item.base.value);
   let extra = 0;
@@ -235,7 +244,6 @@ function getFinalValue(item){
   return base + extra;
 }
 
-// RENDER
 function render(){
   draw("youSlots", you,1);
   draw("themSlots", them,2);
@@ -258,9 +266,9 @@ function draw(id,list,side){
         <small>${item.base.name}</small>
 
         <div style="display:flex;gap:3px;margin-top:4px;justify-content:center;">
-          ${item.mutation ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/e/ec/Mutation_Potion.png" width="12" height="12">' : ""}
-          ${item.legColor ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/4/4f/Legendary_Color_Potion.png" width="12" height="12">' : ""}
-          ${item.legEye ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/f/f9/Legendary_Pupil_Potion.png" width="12" height="12">' : ""}
+          ${item.mutation ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/e/ec/Mutation_Potion.png">' : ""}
+          ${item.legColor ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/4/4f/Legendary_Color_Potion.png">' : ""}
+          ${item.legEye ? '<img src="https://static.wikia.nocookie.net/dragon-adventures/images/f/f9/Legendary_Pupil_Potion.png">' : ""}
         </div>
 
         <button class="remove" onclick="remove(${side},${i})">➖</button>
@@ -273,7 +281,6 @@ function draw(id,list,side){
   }
 }
 
-// POPUP
 function openPopup(side){
   activeSide=side;
   document.getElementById("popup").style.display="block";
@@ -287,7 +294,6 @@ function closePopup(){
   document.getElementById("optionsPopup").style.display="none";
 }
 
-// DRAGONS
 function renderDragonList(list){
   let box=document.getElementById("dragonList");
   box.innerHTML="";
@@ -299,7 +305,6 @@ function renderDragonList(list){
     div.innerHTML=`
       <img src="${d.img}">
       <div>${d.name}</div>
-      <small style="display:none;">${d.value}</small>
     `;
 
     div.onclick=()=>addDragon(d);
@@ -307,19 +312,16 @@ function renderDragonList(list){
   });
 }
 
-// SEARCH
 function filterDragons(){
   let val=document.getElementById("searchBox").value.toLowerCase();
   renderDragonList(dragons.filter(d=>d.name.toLowerCase().includes(val)));
 }
 
-// ADD
 function addDragon(d){
   pendingDragon=d;
   document.getElementById("optionsPopup").style.display="block";
 }
 
-// CONFIRM
 function confirmAdd(){
 
   let item={
@@ -336,14 +338,12 @@ function confirmAdd(){
   update();
 }
 
-// REMOVE
 function remove(side,i){
   if(side===1) you.splice(i,1);
   else them.splice(i,1);
   update();
 }
 
-// UPDATE + WFL BAR
 function update(){
 
   render();
@@ -354,18 +354,30 @@ function update(){
   let diff=themVal-youVal;
   let percent=diff/Math.max(youVal,themVal||1);
 
-  document.getElementById("result").innerText=
-    `You: ${youVal.toLocaleString()} | Them: ${themVal.toLocaleString()}`;
-
   let bar=document.getElementById("wfl");
   let width=50+percent*50;
   width=Math.max(0,Math.min(100,width));
 
   bar.style.width=width+"%";
 
-  if(percent>0.1) bar.style.background="#22c55e";
-  else if(percent<-0.1) bar.style.background="#ef4444";
-  else bar.style.background="#facc15";
+  bar.style.background =
+    percent > 0.1 ? "#22c55e" :
+    percent < -0.1 ? "#ef4444" :
+    "#facc15";
+
+  let label="";
+  let a=Math.abs(percent);
+
+  if(a<0.1) label="FAIR TRADE";
+  else if(percent>0.3) label="BIG WIN";
+  else if(percent>0.1) label="SMALL WIN";
+  else if(percent<-0.3) label="BIG LOSS";
+  else label="SMALL LOSS";
+
+  document.getElementById("wflText").innerText=label;
+
+  document.getElementById("result").innerText=
+    `You: ${youVal.toLocaleString()} | Them: ${themVal.toLocaleString()}`;
 }
 
 render();
