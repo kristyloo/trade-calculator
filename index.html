@@ -103,8 +103,9 @@ document.addEventListener("DOMContentLoaded", function () {
     { name: "Venid", value: "2K", img: "https://static.wikia.nocookie.net/dragon-adventures/images/8/81/Venid_Icon.png" }
   ];
 
-  let p1 = 0;
-  let p2 = 0;
+  // 🔥 NOW ARRAYS (MULTIPLE PICKS)
+  let p1 = [];
+  let p2 = [];
 
   function parseValue(input) {
     if (!input) return 0;
@@ -138,58 +139,67 @@ document.addEventListener("DOMContentLoaded", function () {
         const card1 = document.createElement("div");
         card1.className = "dragon";
         card1.innerHTML = `<img src="${d.img}"><p>${d.name}</p>`;
-        card1.onclick = () => {
-          selectDragon(1, d.value, card1);
-        };
+        card1.onclick = () => toggleSelect(1, d, card1);
 
         const card2 = document.createElement("div");
         card2.className = "dragon";
         card2.innerHTML = `<img src="${d.img}"><p>${d.name}</p>`;
-        card2.onclick = () => {
-          selectDragon(2, d.value, card2);
-        };
+        card2.onclick = () => toggleSelect(2, d, card2);
 
         youBox.appendChild(card1);
         themBox.appendChild(card2);
       });
   }
 
-  function selectDragon(player, value, element) {
-    const parent = element.parentNode;
-    parent.querySelectorAll(".dragon").forEach(el => el.classList.remove("selected"));
-    element.classList.add("selected");
+  // 🔥 TOGGLE (MULTI SELECT)
+  function toggleSelect(player, dragon, element) {
 
-    const num = parseValue(value);
+    let list = player === 1 ? p1 : p2;
 
-    if (player === 1) p1 = num;
-    else p2 = num;
+    const index = list.indexOf(dragon.value);
+
+    if (index === -1) {
+      list.push(dragon.value);
+      element.classList.add("selected");
+    } else {
+      list.splice(index, 1);
+      element.classList.remove("selected");
+    }
+
+    if (player === 1) p1 = list;
+    else p2 = list;
   }
 
+  // 🔥 FIXED WFL LOGIC
   function checkTrade() {
 
-    if (!p1 || !p2) {
+    if (p1.length === 0 || p2.length === 0) {
       document.getElementById("result").innerText = "Pick dragons first!";
       return;
     }
 
-    let diff = p1 - p2;
-    let percent = diff / Math.max(p1, p2);
+    let p1Total = p1.reduce((sum, v) => sum + parseValue(v), 0);
+    let p2Total = p2.reduce((sum, v) => sum + parseValue(v), 0);
+
+    let diff = p2Total - p1Total; // 🔥 FIXED DIRECTION
+    let percent = diff / Math.max(p1Total, p2Total);
 
     let result = "";
 
     if (Math.abs(percent) < 0.1) {
       result = "FAIR TRADE";
-    } else if (percent > 0) {
+    } 
+    else if (percent > 0) {
       result = percent > 0.5 ? "HUGE WIN FOR YOU" : "WIN FOR YOU";
-    } else {
+    } 
+    else {
       result = percent < -0.5 ? "HUGE LOSS FOR YOU" : "LOSS FOR YOU";
     }
 
     document.getElementById("result").innerText =
-      `You: ${p1.toLocaleString()} | Them: ${p2.toLocaleString()} → ${result}`;
+      `You: ${p1Total.toLocaleString()} | Them: ${p2Total.toLocaleString()} → ${result}`;
   }
 
-  // IMPORTANT: hook search + run render AFTER page loads
   document.getElementById("search").addEventListener("input", renderDragons);
 
   renderDragons();
@@ -197,6 +207,3 @@ document.addEventListener("DOMContentLoaded", function () {
   window.checkTrade = checkTrade;
 });
 </script>
-
-</body>
-</html>
